@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agents Classifier</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .controls {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .search-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 1rem;
+            align-items: end;
+        }
+        
+        .search-input-container {
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 16px 12px 40px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #059669;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+        }
+        
+        .filters-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-group label {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+            font-size: 14px;
+        }
+        
+        .filter-group select {
+            padding: 8px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            background-color: white;
+            transition: border-color 0.2s;
+        }
+        
+        .filter-group select:focus {
+            outline: none;
+            border-color: #059669;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-secondary {
+            background-color: #64748b;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #475569;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-left: 4px solid #059669;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #059669;
+            display: block;
+        }
+        
+        .stat-label {
+            color: #64748b;
+            font-size: 14px;
+            margin-top: 0.25rem;
+        }
+        
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .table-wrapper {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        
+        th {
+            background-color: #f8fafc;
+            color: #374151;
+            font-weight: 600;
+            padding: 16px 12px;
+            text-align: left;
+            border-bottom: 2px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        td {
+            padding: 16px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+        }
+        
+        tr:hover {
+            background-color: #f8fafc;
+        }
+        
+        .agent-name {
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .agent-url {
+            color: #059669;
+            text-decoration: none;
+        }
+        
+        .agent-url:hover {
+            text-decoration: underline;
+        }
+        
+        .tag {
+            display: inline-block;
+            padding: 4px 8px;
+            margin: 2px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        
+        .tag-framework { background-color: #e0f7fa; color: #006064; }
+        .tag-autonomous { background-color: #e8f5e8; color: #2e7d32; }
+        .tag-reactive { background-color: #fff3e0; color: #ef6c00; }
+        .tag-collaborative { background-color: #e3f2fd; color: #1565c0; }
+        .tag-specialized { background-color: #f3e5f5; color: #7b1fa2; }
+        
+        .tag-high { background-color: #fee2e2; color: #dc2626; }
+        .tag-medium { background-color: #fef3c7; color: #d97706; }
+        .tag-low { background-color: #dcfce7; color: #16a34a; }
+        
+        .tag-production { background-color: #dcfce7; color: #166534; }
+        .tag-beta { background-color: #fef3c7; color: #ca8a04; }
+        .tag-research { background-color: #dbeafe; color: #2563eb; }
+        
+        .tag-mcp-yes { background-color: #dcfce7; color: #166534; }
+        .tag-mcp-no { background-color: #fee2e2; color: #dc2626; }
+        .tag-mcp-partial { background-color: #fef3c7; color: #ca8a04; }
+        
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            color: #64748b;
+        }
+        
+        .no-results-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .credits {
+            background: #f8fafc;
+            padding: 2rem;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+            margin-top: 3rem;
+        }
+        
+        .credits h3 {
+            color: #059669;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .credits p {
+            color: #64748b;
+            font-size: 14px;
+            margin: 0.5rem 0;
+        }
+        
+        .credits a {
+            color: #059669;
+            text-decoration: none;
+        }
+        
+        .credits a:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .search-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                justify-content: stretch;
+            }
+            
+            .btn {
+                flex: 1;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🤖 AI Agents Classifier</h1>
+        <p>Comprehensive directory and classification tool for autonomous artificial intelligence agents, frameworks and multi-agent systems</p>
+    </div>
+    
+    <div class="container">
+        <div class="stats">
+            <div class="stat-card">
+                <span class="stat-number" id="totalAgents">0</span>
+                <div class="stat-label">Total Agents</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="totalCategories">0</span>
+                <div class="stat-label">Categories</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="totalDomains">0</span>
+                <div class="stat-label">Domains</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="totalFrameworks">0</span>
+                <div class="stat-label">Frameworks</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="search-row">
+                <div class="search-input-container">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" class="search-input" id="searchInput" placeholder="Search agents by name, company, capabilities...">
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="resetFilters()">🔄 Reset</button>
+                </div>
+            </div>
+            
+            <div class="filters-row">
+                <div class="filter-group">
+                    <label for="categoryFilter">Agent Type</label>
+                    <select id="categoryFilter">
+                        <option value="">All types</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="agentTypeFilter">AI Classification</label>
+                    <select id="agentTypeFilter">
+                        <option value="">All classifications</option>
+                        <option value="AI Agent">AI Agent</option>
+                        <option value="Agentic AI">Agentic AI</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="domainFilter">Domain</label>
+                    <select id="domainFilter">
+                        <option value="">All domains</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="autonomyFilter">Autonomy Level</label>
+                    <select id="autonomyFilter">
+                        <option value="">All levels</option>
+                        <option value="High">High</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Low">Low</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="statusFilter">Status</label>
+                    <select id="statusFilter">
+                        <option value="">All statuses</option>
+                        <option value="Production">Production</option>
+                        <option value="Beta">Beta</option>
+                        <option value="Research">Research</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="mcpFilter">MCP Compatible</label>
+                    <select id="mcpFilter">
+                        <option value="">All</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                        <option value="Partial">Partial</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Agent</th>
+                            <th>Type</th>
+                            <th>Domain</th>
+                            <th>Company</th>
+                            <th>Key Capabilities</th>
+                            <th>Autonomy</th>
+                            <th>Status</th>
+                            <th>MCP</th>
+                            <th>Year</th>
+                            <th>URL</th>
+                        </tr>
+                    </thead>
+                    <tbody id="agentsTableBody">
+                    </tbody>
+                </table>
+            </div>
+            <div id="noResults" class="no-results" style="display: none;">
+                <div class="no-results-icon">🔍</div>
+                <h3>No agents found</h3>
+                <p>Try adjusting your search filters</p>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="credits">
+        <h3>🤖 Credits</h3>
+        <p><strong>Created by:</strong> Yusnelkis Milanés Guisado with Claude AI assistance</p>
+        <p><strong>Last updated:</strong> May 2025</p>
+        <p>Research tool for AI agents classification</p>
+        <p>For inquiries: <a href="mailto:ymilanes@gmail.com">ymilanes@gmail.com</a></p>
+    </footer>
+
+    <script>
+        const aiAgentsData = [
+            {name: "Microsoft AutoGen", agentType: "Multi-Agent Framework", aiClassification: "Agentic AI", domain: "Multi-Agent Systems Development", company: "Microsoft Research", capabilities: "Multi-agent conversations, automatic coordination, LLM/human/tool integration", autonomyLevel: "High", status: "Production", mcpCompatible: "Yes", year: "2023", url: "https://github.com/microsoft/autogen", description: "Framework for creating multiple agent systems that cooperate through automatic conversations"},
+            {name: "LangGraph", agentType: "Workflow Framework", aiClassification: "Agentic AI", domain: "Agent Orchestration", company: "LangChain", capabilities: "Cyclic workflows, explicit flow control, state management, multi-agent", autonomyLevel: "High", status: "Production", mcpCompatible: "Yes", year: "2024", url: "https://langchain.com/langgraph", description: "Framework for building agent applications with cyclic workflows and granular control"},
+            {name: "CrewAI", agentType: "Multi-Agent Framework", aiClassification: "Agentic AI", domain: "Collaborative Automation", company: "CrewAI Inc.", capabilities: "Role-specific agents, sequential/parallel collaboration, task management", autonomyLevel: "High", status: "Production", mcpCompatible: "Partial", year: "2023", url: "https://crewai.com", description: "Framework for creating specialized agent teams that collaborate on complex tasks"},
+            {name: "LlamaIndex Agents", agentType: "Agent Framework", aiClassification: "Agentic AI", domain: "Knowledge Assistants", company: "LlamaIndex", capabilities: "RAG agents, query planning, tool use, agentic workflows", autonomyLevel: "High", status: "Production", mcpCompatible: "Yes", year: "2023", url: "https://llamaindex.ai", description: "Framework for building knowledge agents that work with enterprise data"},
+            {name: "Llama-Agents", agentType: "Multi-Agent Framework", aiClassification: "Agentic AI", domain: "Agent Microservices", company: "LlamaIndex", capabilities: "Agents as microservices, distributed architecture, centralized orchestration", autonomyLevel: "High", status: "Production", mcpCompatible: "Yes", year: "2024", url: "https://llamaindex.ai/llama-agents", description: "Framework for deploying agents as distributed microservices"},
+            {name: "OpenAI Swarm", agentType: "Multi-Agent Framework", aiClassification: "Agentic AI", domain: "Agent Coordination", company: "OpenAI", capabilities: "Agent handoffs, distributed coordination, scalability", autonomyLevel: "High", status: "Experimental", mcpCompatible: "Yes", year: "2024", url: "https://github.com/openai/swarm", description: "Experimental framework for coordinating multiple specialized agents"},
+            {name: "GPT Researcher", agentType: "Research Agent", aiClassification: "AI Agent", domain: "Web Research", company: "Open Source", capabilities: "Autonomous web research, multi-source synthesis, structured reports", autonomyLevel: "High", status: "Production", mcpCompatible: "Partial", year: "2023", url: "https://github.com/assafelovic/gpt-researcher", description: "Agent that conducts comprehensive web research and generates detailed reports"},
+            {name: "Elicit Research Agent", agentType: "Research Agent", aiClassification: "AI Agent", domain: "Academic Research", company: "Ought", capabilities: "Automatic paper analysis, literature synthesis, scientific data extraction", autonomyLevel: "High", status: "Production", mcpCompatible: "No", year: "2021", url: "https://elicit.org", description: "Agent specialized in automatic analysis of scientific literature"},
+            {name: "Perplexity AI", agentType: "Research Agent", aiClassification: "AI Agent", domain: "Intelligent Search", company: "Perplexity AI", capabilities: "Conversational search, source citation, real-time research", autonomyLevel: "High", status: "Production", mcpCompatible: "No", year: "2022", url: "https://perplexity.ai", description: "Research agent that provides answers with verified sources in real-time"},
+            {name: "Stanford Storm", agentType: "Research Agent", aiClassification: "AI Agent", domain: "Academic Research", company: "Stanford University", capabilities: "Multi-stage research, knowledge synthesis, hypothesis generation", autonomyLevel: "High", status: "Research", mcpCompatible: "Partial", year: "2024", url: "https://storm.genie.stanford.edu", description: "Agent that conducts academic research systematically and autonomously"},
+            {name: "FutureHouse Crow", agentType: "Research Agent", aiClassification: "AI Agent", domain: "Scientific Literature", company: "FutureHouse", capabilities: "Literature search, paper synthesis, superhuman accuracy responses", autonomyLevel: "High", status: "Production", mcpCompatible: "No", year: "2024", url: "https://platform.futurehouse.org", description: "General-purpose agent for scientific literature search and synthesis"},
+            {name: "FutureHouse Falcon", agentType: "Research Agent", aiClassification: "AI Agent", domain: "Literature Reviews", company: "FutureHouse", capabilities: "Deep literature reviews, specialized database access, massive synthesis", autonomyLevel: "High", status: "Production", mcpCompatible: "No", year: "2024", url: "https://platform.futurehouse.org", description: "Agent specialized in deep scientific literature reviews"},
+            {name: "Google AI Co-Scientist", agentType: "Research Agent", aiClassification: "Agentic AI", domain: "Scientific Discovery", company: "Google DeepMind", capabilities: "Hypothesis generation, experimental design, multi-agent scientific collaboration", autonomyLevel: "High", status: "Research", mcpCompatible: "Partial", year: "2024", url: "https://research.google.com", description: "Multi-agent system for accelerating scientific and biomedical discoveries"},
+            {name: "Sakana AI Scientist", agentType: "Research Agent", aiClassification: "Agentic AI", domain: "Automated Research", company: "Sakana AI", capabilities: "Complete research cycle automation, paper generation, automatic peer review", autonomyLevel: "High", status: "Research", mcpCompatible: "No", year: "2024", url: "https://sakana.ai/ai-scientist", description: "System that automates the complete scientific research process"},
+            {name: "PaperQA Agent", agentType: "Research Agent", aiClassification: "AI Agent", domain: "Paper Analysis", company: "Open Source", capabilities: "Q&A on scientific papers, information extraction, knowledge synthesis", autonomyLevel: "High", status: "Production", mcpCompatible: "Yes", year: "2023", url: "https://github.com/whitead/paper-qa", description: "RAG agent specialized in answering questions about scientific literature"},
+            {name: "ThoughtSpot Spotter", agentType: "Analytics Agent", aiClassification: "AI Agent", domain: "Business Intelligence", company: "ThoughtSpot", capabilities: "Autonomous enterprise data analysis, insight generation, intelligent dashboards", autonomyLevel: "High", status: "Production", mcpCompatible: "No", year: "2024", url: "https://thoughtspot.com", description: "Analytics agent that learns and provides enterprise insights autonomously"},
+            {name: "Google BigQuery AI Agent", agentType: "Analytics Agent", aiClassification: "Agentic AI", domain: "Data Analytics", company: "Google Cloud", capabilities: "Autonomous data analysis, intelligent SQL, real-time insights", autonomyLevel: "High", status: "Production", mcpCompatible: "Partial", year: "2024", url: "https://cloud.google.com/bigquery", description: "Agent that automates massive data analysis with predictive capabilities"},
+            {name: "Looker Analytics Agent", agentType: "Conversational Agent", aiClassification: "AI Agent", domain: "Conversational Analytics", company: "Google Cloud", capabilities: "Conversational analysis, semantic understanding, real-time metrics", autonomyLevel: "High", status: "Production", mcpCompatible: "Partial", year: "2024", url: "https://cloud.google.com/looker", description: "Conversational agent for data analysis with advanced semantic understanding"},
+            {name: "Salesforce Agentforce Analytics", agentType: "Analytics Agent", aiClassification: "Agentic AI", domain: "Business Analytics", company: "Salesforce", capabilities: "Data-to-action conversion, predictive analysis, decision automation", autonomyLevel: "High", status: "Production", mcpCompatible: "No", year: "2024", url: "https://salesforce.com/agentforce", description: "Agent that converts enterprise data into intelligent automated actions"},
+            {name: "DataRobot AutoML", agentType: "Analytics Agent", aiClassification: "AI Agent", domain: "Machine Learning", company: "DataRobot", capabilities: "Automatic model building, automatic deployment, predictive analysis", autonomyLevel: "High", status: "Production", mcpCompatible: "No", year: "2012", url: "https://datarobot.com", description: "Agent that builds and deploys ML models automatically"},
+            {name: "Palantir AIP", agentType: "Analytics Agent", aiClassification: "AI Agent", domain: "Enterprise Analysis", company: "Palantir", capabilities: "Massive data automatic analysis, pattern detection, intelligence operations", autonomyLevel: "High", status: "Production", mcpCompatible: "No", year: "2023", url: "https://palantir.com/aip", description: "Agent for intelligent analysis of complex enterprise data"},
+            {name: "Tableau AI Assistant", agentType: "Visualization Agent", aiClassification: "AI Agent", domain: "Data Visualization", company: "Salesforce", capabilities: "Automatic visualizations, predictive insights, trend analysis", autonomyLevel: "Medium", status: "Production", mcpCompatible: "No", year: "2023", url: "https://tableau.com", description: "Agent that generates intelligent visualizations and detects insights automatically"},
+            {name: "Microsoft Fabric Copilot", agentType: "Analytics Agent", aiClassification: "AI Agent", domain: "Unified Analytics", company: "Microsoft", capabilities: "Unified data analysis, code generation, automated insights", autonomyLevel: "High", status: "Production", mcpCompatible: "Partial", year: "2023", url: "https://microsoft.com/fabric", description: "Agent for unified analysis on the Microsoft Fabric platform"},
+            {name: "Databricks Assistant", agentType: "Analytics Agent", aiClassification: "AI Agent", domain: "Data Science", company: "Databricks", capabilities: "Massive data analysis, automated ML, natural language processing on data", autonomyLevel: "High", status: "Production", mcpCompatible: "Partial", year: "2023", url: "https://databricks.com", description: "Agent for data science and analysis on lakehouse platforms"},
+            {name: "Snowflake Cortex Analyst", agentType: "Analytics Agent", aiClassification: "AI Agent", domain: "Data Cloud Analytics", company: "Snowflake", capabilities: "Conversational data analysis, natural language queries, automated insights", autonomyLevel: "High", status: "Production", mcpCompatible: "No", year: "2024", url: "https://snowflake.com", description: "Agent that enables conversational data analysis in the cloud"},
+            {name: "Alteryx APA", agentType: "Analytics Agent", aiClassification: "AI Agent", domain: "Process Analytics", company: "Alteryx", capabilities: "Analytics process automation, machine learning, automatic data preparation", autonomyLevel: "High", status: "Production", mcpCompatible: "No", year: "2022", url: "https://alteryx.com", description: "Agent that automates complete data analysis processes"},
+            {name: "SAS Viya AI Agent", agentType: "Analytics Agent", aiClassification: "AI Agent", domain: "Advanced Analytics", company: "SAS", capabilities: "Advanced statistical analysis, predictive modeling, insight automation", autonomyLevel: "High", status: "Production", mcpCompatible: "No", year: "2023", url: "https://sas.com/viya", description: "Agent for advanced statistical analysis and automated predictive modeling"},
+            {name: "DeepSeek Data Agent", agentType: "Analytics Agent", aiClassification: "Agentic AI", domain: "Autonomous Data Analysis", company: "DeepSeek", capabilities: "Multi-step autonomous analysis, data reasoning, adaptive workflows", autonomyLevel: "High", status: "Production", mcpCompatible: "Yes", year: "2024", url: "https://deepseek.com", description: "Open-source agent for completely autonomous data analysis"},
+            {name: "Proxy 1.0 Web Agent", agentType: "Data Agent", aiClassification: "AI Agent", domain: "Web Data Collection", company: "Proxy", capabilities: "Autonomous web navigation, intelligent scraping, real-time data collection", autonomyLevel: "High", status: "Production", mcpCompatible: "Partial", year: "2024", url: "https://proxy.com", description: "Agent that simulates human behavior for web data collection"},
+            {name: "Devin AI", agentType: "Development Agent", aiClassification: "AI Agent", domain: "Software Engineering", company: "Cognition AI", capabilities: "Autonomous software development, debugging, deployment, project management", autonomyLevel: "High", status: "Beta", mcpCompatible: "Partial", year: "2024", url: "https://cognition-labs.com", description: "Agent that develops software completely autonomously"},
+            {name: "Cursor AI", agentType: "Code Agent", aiClassification: "AI Agent", domain: "Software Development", company: "Cursor", capabilities: "Contextual code generation, automatic refactoring, intelligent debugging", autonomyLevel: "High", status: "Production", mcpCompatible: "Yes", year: "2023", url: "https://cursor.sh", description: "Agent that assists in development with deep context understanding"},
+            {name: "GitHub Copilot", agentType: "Code Agent", aiClassification: "AI Agent", domain: "Programming Assistance", company: "GitHub/Microsoft", capabilities: "Code autocompletion, function generation, contextual suggestions", autonomyLevel: "Medium", status: "Production", mcpCompatible: "Partial", year: "2021", url: "https://github.com/features/copilot", description: "Programming assistant that suggests code in real-time"},
+            {name: "Replit Agent", agentType: "Development Agent", aiClassification: "AI Agent", domain: "Collaborative Development", company: "Replit", capabilities: "Autonomous full-stack development, debugging, automatic deployment", autonomyLevel: "High", status: "Production", mcpCompatible: "Yes", year: "2024", url: "https://replit.com/agent", description: "Agent that builds complete applications from prompts"},
+            {name: "Codium AI", agentType: "Testing Agent", aiClassification: "AI Agent", domain: "Automated Testing", company: "Codium AI", capabilities: "Automatic test generation, coverage analysis, bug detection", autonomyLevel: "High", status: "Production", mcpCompatible: "Partial", year: "2022", url: "https://codium.ai", description: "Agent specialized in automatically creating tests for any code"},
+            {name: "Tabnine AI", agentType: "Code Agent", aiClassification: "AI Agent", domain: "Intelligent Autocompletion", company: "Tabnine", capabilities: "Code prediction, contextual autocompletion, suggested refactoring", autonomyLevel: "Medium", status: "Production", mcpCompatible: "No", year: "2020", url: "https://tabnine.com", description: "Code assistant that predicts and completes entire lines of code"},
+            {name: "Amazon CodeWhisperer", agentType: "Code Agent", aiClassification: "AI Agent", domain: "Code Generation", company: "Amazon Web Services", capabilities: "Comment-based code generation, security optimization", autonomyLevel: "Medium", status: "Production", mcpCompatible: "Partial", year: "2022", url: "https://aws.amazon.com/codewhisperer", description: "AWS agent that generates secure and optimized code"},
+            {name: "OpenAI Codex", agentType: "Code Agent", aiClassification: "AI Agent", domain: "Code Generation", company: "OpenAI", capabilities: "Natural language to code translation, multiple programming languages", autonomyLevel: "High", status: "Production", mcpCompatible: "Yes", year: "2021", url: "https://openai.com/codex", description: "Base model that converts descriptions into functional code"},
+            {name: "Sourcegraph Cody", agentType: "Code Agent", aiClassification: "AI Agent", domain: "Codebase Understanding", company: "Sourcegraph", capabilities: "Complete repository analysis, code explanation, intelligent refactoring", autonomyLevel: "High", status: "Production", mcpCompatible: "Yes", year: "2023", url: "https://sourcegraph.com/cody", description: "Agent that understands and works with complete codebases"},
+            {name: "Anthropic Claude Dev", agentType: "Development Agent", aiClassification: "AI Agent", domain: "Assisted Development", company: "Anthropic", capabilities: "Code analysis, debugging, software architecture, code review", autonomyLevel: "High", status: "Production", mcpCompatible: "Yes", year: "2023", url: "https://claude.ai", description: "Development assistant with advanced code reasoning capabilities"},
+            {name: "Mintlify Writer", agentType: "Documentation Agent", aiClassification: "AI Agent", domain: "Code Documentation", company: "Mintlify", capabilities: "Automatic documentation generation, code comments, technical guides", autonomyLevel: "High", status: "Production", mcpCompatible: "No", year: "2022", url: "https://mintlify.com", description: "Agent that generates technical documentation automatically"},
+            {name: "Sweep AI", agentType: "Maintenance Agent", aiClassification: "AI Agent", domain: "Code Maintenance", company: "Sweep AI", capabilities: "Automatic refactoring, bug fixes, performance improvements", autonomyLevel: "High", status: "Beta", mcpCompatible: "Partial", year: "2023", url: "https://sweep.ai", description: "Agent that maintains and improves code automatically"},
+            {name: "Kensho NERD", agentType: "Financial Agent", aiClassification: "AI Agent", domain: "Algorithmic Trading", company: "S&P Global", capabilities: "Real-time market analysis, automatic trade execution", autonomyLevel: "High", status: "Production", mcpCompatible: "No", year: "2018", url: "https://kensho.com", description: "Agent that makes trading decisions autonomously"},
+            {name: "Betterment Robo-Advisor", agentType: "Financial Agent", aiClassification: "AI Agent", domain: "Investment Management", company: "Betterment", capabilities: "Automatic portfolio rebalancing, tax optimization", autonomyLevel: "High", status: "Production", mcpCompatible: "No", year: "2008", url: "https://betterment.com", description: "Agent that manages investments completely autonomously"},
+            {name: "Darktrace ANTIGENA", agentType: "Security Agent", aiClassification: "AI Agent", domain: "Cybersecurity", company: "Darktrace", capabilities: "Autonomous threat detection, automatic incident response", autonomyLevel: "High", status: "Production", mcpCompatible: "No", year: "2013", url: "https://darktrace.com", description: "Agent that detects and responds to cyber threats automatically"},
+            {name: "CrowdStrike Falcon", agentType: "Security Agent", aiClassification: "AI Agent", domain: "Endpoint Protection", company: "CrowdStrike", capabilities: "Continuous monitoring, malware detection, automatic response", autonomyLevel: "High", status: "Production", mcpCompatible: "No", year: "2011", url: "https://crowdstrike.com", description: "Endpoint agent that acts autonomously"},
+            {name: "Boston Dynamics Spot", agentType: "Robotic Agent", aiClassification: "AI Agent", domain: "Industrial Robotics", company: "Boston Dynamics", capabilities: "Autonomous navigation, industrial inspection, patrolling", autonomyLevel: "High", status: "Production", mcpCompatible: "No", year: "2020", url: "https://bostondynamics.com/spot", description: "Quadruped robot that operates autonomously"},
+            {name: "Waymo Driver", agentType: "Driving Agent", aiClassification: "AI Agent", domain: "Autonomous Vehicles", company: "Waymo", capabilities: "Autonomous driving, urban navigation, decision making", autonomyLevel: "High", status: "Production", mcpCompatible: "No", year: "2020", url: "https://waymo.com", description: "Autonomous driving agent without human driver"},
+            {name: "Tesla Autopilot", agentType: "Assistance Agent", aiClassification: "AI Agent", domain: "Assisted Driving", company: "Tesla", capabilities: "Driving assistance, automatic lane change", autonomyLevel: "Medium", status: "Production", mcpCompatible: "No", year: "2014", url: "https://tesla.com/autopilot", description: "Advanced driver assistance agent"},
+            {name: "Zapier AI Agent", agentType: "Autonomous Agent", aiClassification: "Agentic AI", domain: "Process Automation", company: "Zapier", capabilities: "Workflow automation, application integration, complex task execution", autonomyLevel: "High", status: "Production", mcpCompatible: "Yes", year: "2023", url: "https://zapier.com/ai", description: "Agent that automates complex workflows between multiple applications"},
+            {name: "Make AI Agents", agentType: "Autonomous Agent", aiClassification: "Agentic AI", domain: "Visual Automation", company: "Make", capabilities: "Visual AI automation, adaptive workflows, 2000+ app integration", autonomyLevel: "High", status: "Production", mcpCompatible: "Partial", year: "2024", url: "https://make.com/ai-agents", description: "Automation agents that think and act adaptively in visual workflows"},
+            {name: "n8n AI Agent", agentType: "Workflow Agent", aiClassification: "Agentic AI", domain: "Open Source Automation", company: "n8n", capabilities: "AI-agnostic workflows, LangChain integration, self-hosted automation", autonomyLevel: "High", status: "Production", mcpCompatible: "Yes", year: "2024", url: "https://n8n.io/ai", description: "Open-source automation agent with integrated AI capabilities"},
+            {name: "Microsoft Power Automate", agentType: "Enterprise Agent", aiClassification: "AI Agent", domain: "Enterprise Automation", company: "Microsoft", capabilities: "Business process automation, Office 365 integration, RPA", autonomyLevel: "High", status: "Production", mcpCompatible: "Partial", year: "2020", url: "https://powerautomate.microsoft.com", description: "Enterprise automation agent integrated with Microsoft ecosystem"},
+            {name: "UiPath Automation Agent", agentType: "RPA Agent", aiClassification: "AI Agent", domain: "Robotic Process Automation", company: "UiPath", capabilities: "Robotic process automation, document processing, intelligent decisions", autonomyLevel: "High", status: "Production", mcpCompatible: "No", year: "2018", url: "https://uipath.com", description: "RPA agent that automates complex business processes"},
+            {name: "Automation Anywhere Bot", agentType: "RPA Agent", aiClassification: "AI Agent", domain: "Enterprise Automation", company: "Automation Anywhere", capabilities: "Intelligent bots, cognitive automation, natural language processing", autonomyLevel: "High", status: "Production", mcpCompatible: "No", year: "2017", url: "https://automationanywhere.com", description: "Enterprise agent that combines RPA with cognitive capabilities"},
+            {name: "Workato Agent", agentType: "Integration Agent", aiClassification: "AI Agent", domain: "Enterprise Integration", company: "Workato", capabilities: "Enterprise integration automation, intelligent workflows, pre-built connectors", autonomyLevel: "High", status: "Production", mcpCompatible: "No", year: "2016", url: "https://workato.com", description: "Agent that automates enterprise integrations and complex workflows"},
+            {name: "Intercom Resolution Bot", agentType: "Conversational Agent", aiClassification: "AI Agent", domain: "Customer Support", company: "Intercom", capabilities: "Automatic ticket resolution, intelligent escalation", autonomyLevel: "Medium", status: "Production", mcpCompatible: "No", year: "2021", url: "https://intercom.com/resolution-bot", description: "Agent that resolves customer queries automatically"},
+            {name: "Ada Customer Service AI", agentType: "Conversational Agent", aiClassification: "AI Agent", domain: "Customer Support", company: "Ada", capabilities: "Multi-turn conversations, backend system integration", autonomyLevel: "High", status: "Production", mcpCompatible: "No", year: "2016", url: "https://ada.cx", description: "Conversational agent for complex service interactions"},
+            {name: "AlphaStar", agentType: "Strategic Agent", aiClassification: "AI Agent", domain: "Strategy Games", company: "DeepMind", capabilities: "Strategic planning, micromanagement, macro-strategy", autonomyLevel: "High", status: "Research", mcpCompatible: "No", year: "2019", url: "https://deepmind.com/research/case-studies/alphastar", description: "Agent that reached Grandmaster level in StarCraft II"},
+            {name: "OpenAI Five", agentType: "Game Agent", aiClassification: "AI Agent", domain: "Esports", company: "OpenAI", capabilities: "Team strategy, multi-agent coordination", autonomyLevel: "High", status: "Research", mcpCompatible: "No", year: "2018", url: "https://openai.com/five", description: "Agent that played Dota 2 at professional level"},
+            {name: "Amazon Kiva Robots", agentType: "Logistics Agent", aiClassification: "AI Agent", domain: "Warehouse Logistics", company: "Amazon", capabilities: "Autonomous navigation, inventory transport", autonomyLevel: "High", status: "Production", mcpCompatible: "No", year: "2012", url: "https://amazon.com/robotics", description: "Robotic agents that manage warehouse inventory"},
+            {name: "Starship Delivery Robots", agentType: "Delivery Agent", aiClassification: "AI Agent", domain: "Last-Mile Delivery", company: "Starship Technologies", capabilities: "Autonomous urban navigation, package delivery", autonomyLevel: "High", status: "Production", mcpCompatible: "No", year: "2014", url: "https://starship.xyz", description: "Autonomous robots for last-mile deliveries"},
+            {name: "Ada Health Assessment", agentType: "Medical Agent", aiClassification: "AI Agent", domain: "Symptom Assessment", company: "Ada Health", capabilities: "Differential diagnosis, risk assessment", autonomyLevel: "Medium", status: "Production", mcpCompatible: "No", year: "2016", url: "https://ada.com", description: "Agent that performs preliminary medical assessments"},
+            {name: "Tempus ONE", agentType: "Medical Agent", aiClassification: "AI Agent", domain: "Precision Oncology", company: "Tempus", capabilities: "Automatic genomic analysis, treatment recommendations", autonomyLevel: "High", status: "Production", mcpCompatible: "No", year: "2015", url: "https://tempus.com", description: "Agent that personalizes oncological treatments"},
+            {name: "Airtop Browser AI", agentType: "Web Agent", aiClassification: "AI Agent", domain: "Browser Automation", company: "Airtop", capabilities: "Browser automation, intelligent web interaction", autonomyLevel: "High", status: "Production", mcpCompatible: "Yes", year: "2023", url: "https://airtop.ai", description: "Agent that navigates and automates browser tasks"},
+            {name: "Skyvern", agentType: "Web Agent", aiClassification: "AI Agent", domain: "Web Automation", company: "Skyvern", capabilities: "Visual web automation, UI change adaptation", autonomyLevel: "High", status: "Beta", mcpCompatible: "Partial", year: "2024", url: "https://skyvern.com", description: "Agent that automates complex web workflows"},
+            {name: "Roomba i7+", agentType: "Domestic Agent", aiClassification: "AI Agent", domain: "Automatic Cleaning", company: "iRobot", capabilities: "Autonomous mapping, scheduled cleaning, automatic emptying", autonomyLevel: "High", status: "Production", mcpCompatible: "No", year: "2018", url: "https://irobot.com", description: "Robotic agent that cleans homes autonomously"},
+            {name: "Nest Learning Thermostat", agentType: "Domestic Agent", aiClassification: "AI Agent", domain: "Home Automation", company: "Google", capabilities: "Pattern learning, automatic temperature adjustment", autonomyLevel: "Medium", status: "Production", mcpCompatible: "No", year: "2011", url: "https://nest.google.com", description: "Agent that learns behaviors and adjusts climate control"},
+            {name: "AlphaFold", agentType: "Scientific Agent", aiClassification: "AI Agent", domain: "Structural Biology", company: "DeepMind", capabilities: "Protein structure prediction, molecular modeling", autonomyLevel: "High", status: "Research", mcpCompatible: "No", year: "2018", url: "https://deepmind.com/research/case-studies/alphafold", description: "Agent that predicts protein structures with atomic precision"},
+            {name: "Atomwise AI", agentType: "Scientific Agent", aiClassification: "AI Agent", domain: "Drug Discovery", company: "Atomwise", capabilities: "Automatic molecular design, pharmacological property prediction", autonomyLevel: "High", status: "Production", mcpCompatible: "No", year: "2012", url: "https://atomwise.com", description: "Agent that designs pharmaceutical molecules autonomously"},
+            {name: "Blue River See & Spray", agentType: "Agricultural Agent", aiClassification: "AI Agent", domain: "Precision Agriculture", company: "John Deere", capabilities: "Autonomous weed identification, selective herbicide application", autonomyLevel: "High", status: "Production", mcpCompatible: "No", year: "2017", url: "https://bluerivertechnology.com", description: "Robotic agent that identifies and treats weeds automatically"},
+            {name: "Iron Ox Robotic Farmers", agentType: "Agricultural Agent", aiClassification: "AI Agent", domain: "Robotic Agriculture", company: "Iron Ox", capabilities: "Automatic planting, crop monitoring, robotic harvesting", autonomyLevel: "High", status: "Production", mcpCompatible: "No", year: "2018", url: "https://ironox.com", description: "Robotic agents that manage hydroponic farms"}
+        ];
+
+        let filteredData = [...aiAgentsData];
+        
+        function populateFilters() {
+            const categories = [...new Set(aiAgentsData.map(agent => agent.agentType))].sort();
+            const domains = [...new Set(aiAgentsData.map(agent => agent.domain))].sort();
+            
+            const categoryFilter = document.getElementById('categoryFilter');
+            const domainFilter = document.getElementById('domainFilter');
+            
+            categoryFilter.innerHTML = '<option value="">All types</option>';
+            domainFilter.innerHTML = '<option value="">All domains</option>';
+            
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categoryFilter.appendChild(option);
+            });
+            
+            domains.forEach(domain => {
+                const option = document.createElement('option');
+                option.value = domain;
+                option.textContent = domain;
+                domainFilter.appendChild(option);
+            });
+        }
+        
+        function getTagClass(type, value) {
+            if (type === 'agentType') {
+                if (value.includes('Framework')) return 'tag-framework';
+                if (value.includes('Autonomous')) return 'tag-autonomous';
+                if (value.includes('Conversational')) return 'tag-collaborative';
+                if (value.includes('Specific')) return 'tag-specialized';
+                return 'tag-reactive';
+            }
+            if (type === 'autonomy') {
+                if (value === 'High') return 'tag-high';
+                if (value === 'Medium') return 'tag-medium';
+                return 'tag-low';
+            }
+            if (type === 'status') {
+                if (value === 'Production') return 'tag-production';
+                if (value === 'Beta') return 'tag-beta';
+                return 'tag-research';
+            }
+            if (type === 'mcp') {
+                if (value === 'Yes') return 'tag-mcp-yes';
+                if (value === 'No') return 'tag-mcp-no';
+                return 'tag-mcp-partial';
+            }
+            return '';
+        }
+        
+        function renderTable(data = filteredData) {
+            const tbody = document.getElementById('agentsTableBody');
+            const noResults = document.getElementById('noResults');
+            
+            tbody.innerHTML = '';
+            
+            if (data.length === 0) {
+                noResults.style.display = 'block';
+                return;
+            }
+            
+            noResults.style.display = 'none';
+            
+            data.forEach(agent => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <div class="agent-name">${agent.name}</div>
+                        <div style="font-size: 12px; color: #64748b; margin-top: 2px;">${agent.description}</div>
+                    </td>
+                    <td><span class="tag ${getTagClass('agentType', agent.agentType)}">${agent.agentType}</span></td>
+                    <td>${agent.domain}</td>
+                    <td>${agent.company}</td>
+                    <td style="max-width: 300px;">${agent.capabilities}</td>
+                    <td><span class="tag ${getTagClass('autonomy', agent.autonomyLevel)}">${agent.autonomyLevel}</span></td>
+                    <td><span class="tag ${getTagClass('status', agent.status)}">${agent.status}</span></td>
+                    <td><span class="tag ${getTagClass('mcp', agent.mcpCompatible)}">${agent.mcpCompatible}</span></td>
+                    <td>${agent.year}</td>
+                    <td><a href="${agent.url}" target="_blank" class="agent-url">🔗 View</a></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        function filterData() {
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const agentTypeFilter = document.getElementById('agentTypeFilter').value;
+            const domainFilter = document.getElementById('domainFilter').value;
+            const autonomyFilter = document.getElementById('autonomyFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const mcpFilter = document.getElementById('mcpFilter').value;
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            
+            filteredData = aiAgentsData.filter(agent => {
+                const matchesCategory = !categoryFilter || agent.agentType === categoryFilter;
+                const matchesAgentType = !agentTypeFilter || agent.aiClassification === agentTypeFilter;
+                const matchesDomain = !domainFilter || agent.domain === domainFilter;
+                const matchesAutonomy = !autonomyFilter || agent.autonomyLevel === autonomyFilter;
+                const matchesStatus = !statusFilter || agent.status === statusFilter;
+                const matchesMCP = !mcpFilter || agent.mcpCompatible === mcpFilter;
+                const matchesSearch = !searchInput || 
+                    agent.name.toLowerCase().includes(searchInput) ||
+                    agent.company.toLowerCase().includes(searchInput) ||
+                    agent.capabilities.toLowerCase().includes(searchInput) ||
+                    agent.description.toLowerCase().includes(searchInput) ||
+                    agent.domain.toLowerCase().includes(searchInput);
+                
+                return matchesCategory && matchesAgentType && matchesDomain && matchesAutonomy && matchesStatus && matchesMCP && matchesSearch;
+            });
+            
+            renderTable(filteredData);
+            updateStats();
+        }
+        
+        function resetFilters() {
+            document.getElementById('categoryFilter').value = '';
+            document.getElementById('agentTypeFilter').value = '';
+            document.getElementById('domainFilter').value = '';
+            document.getElementById('autonomyFilter').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('mcpFilter').value = '';
+            document.getElementById('searchInput').value = '';
+            filteredData = [...aiAgentsData];
+            renderTable();
+            updateStats();
+        }
+        
+        function updateStats() {
+            document.getElementById('totalAgents').textContent = filteredData.length;
+            const categories = [...new Set(filteredData.map(agent => agent.agentType))];
+            const domains = [...new Set(filteredData.map(agent => agent.domain))];
+            const frameworks = filteredData.filter(agent => agent.agentType.includes('Framework'));
+            
+            document.getElementById('totalCategories').textContent = categories.length;
+            document.getElementById('totalDomains').textContent = domains.length;
+            document.getElementById('totalFrameworks').textContent = frameworks.length;
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            populateFilters();
+            renderTable();
+            updateStats();
+            
+            document.getElementById('searchInput').addEventListener('input', filterData);
+            document.getElementById('categoryFilter').addEventListener('change', filterData);
+            document.getElementById('agentTypeFilter').addEventListener('change', filterData);
+            document.getElementById('domainFilter').addEventListener('change', filterData);
+            document.getElementById('autonomyFilter').addEventListener('change', filterData);
+            document.getElementById('statusFilter').addEventListener('change', filterData);
+            document.getElementById('mcpFilter').addEventListener('change', filterData);
+        });
+    </script>
+</body>
+</html>
